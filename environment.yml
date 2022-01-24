@@ -1,0 +1,26 @@
+name: pybaum
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.9
+  - pip
+  - setuptools_scm
+  - toml
+  - jupyterlab
+  - nbsphinx
+  - pdbpp
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - sphinx=2.4.4
+  - pydata-sphinx-theme>=0.3.0
+  - sphinxcontrib-bibtex
+  - tox-conda
+  - sphinx-panels
+  - pip:
+      - black
+      - blackcellmagic
+      - pre-commit

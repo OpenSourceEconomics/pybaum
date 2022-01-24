@@ -1,0 +1,16 @@
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - ipython
+  - pip
+  - setuptools_scm
+  - toml
+
+  - pip:
+      - sphinx
+      - pydata-sphinx-theme>=0.3.0
+      - nbsphinx
+      - sphinxcontrib-bibtex
+      - sphinx-panels
+      - ../
