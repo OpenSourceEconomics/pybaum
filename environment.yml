@@ -20,6 +20,8 @@ dependencies:
   - sphinxcontrib-bibtex
   - tox-conda
   - sphinx-panels
+  - numpy
+  - pandas
   - pip:
       - black
       - blackcellmagic
