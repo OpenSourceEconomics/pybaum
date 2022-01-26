@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=source
 set BUILDDIR=build
-set SPHINXPROJ=estimagic
+set SPHINXPROJ=pybaum
 
 if "%1" == "" goto help
 
