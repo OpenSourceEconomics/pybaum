@@ -55,9 +55,20 @@ repos:
     -   id: flake8
         types: [python]
         additional_dependencies: [
-            flake8-alfred, flake8-bugbear, flake8-builtins, flake8-comprehensions,
-            flake8-docstrings, flake8-eradicate, flake8-print, flake8-rst-docstrings,
-            flake8-todo, pep8-naming, pydocstyle,
+            flake8-alfred,
+            flake8-bugbear,
+            flake8-builtins,
+            flake8-comprehensions,
+            flake8-docstrings,
+            flake8-eradicate,
+            flake8-print,
+            flake8-pytest-style,
+            flake8-todo,
+            flake8-typing-imports,
+            flake8-unused-arguments,
+            pep8-naming,
+            pydocstyle,
+            Pygments,
         ]
 -   repo: https://github.com/PyCQA/doc8
     rev: 0.10.1
@@ -76,3 +87,22 @@ repos:
     rev: 0.10.1
     hooks:
     -   id: doc8
+-   repo: https://github.com/asottile/setup-cfg-fmt
+    rev: v1.20.0
+    hooks:
+    -   id: setup-cfg-fmt
+-   repo: https://github.com/econchick/interrogate
+    rev: 1.5.0
+    hooks:
+    -   id: interrogate
+        args: [-v, --fail-under=20]
+        exclude: ^(docs|setup\.py)
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.1.0
+  hooks:
+    -   id: codespell
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v2.31.0
+    hooks:
+    -   id: pyupgrade
+        args: [--py37-plus]

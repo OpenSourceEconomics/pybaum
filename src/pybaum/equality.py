@@ -13,6 +13,7 @@ if IS_PANDAS_INSTALLED:
 
 EQUALITY_CHECKERS = {}
 
+
 if IS_NUMPY_INSTALLED:
     EQUALITY_CHECKERS[np.ndarray] = lambda a, b: bool((a == b).all())
 

@@ -2,4 +2,4 @@
 pybaum
 ======
 
-Pybaum contains tools to work with pytrees.
+pybaum contains tools to work with pytrees.

@@ -15,7 +15,7 @@ def _list():
     entry = {
         list: {
             "flatten": lambda tree: (tree, None),
-            "unflatten": lambda aux_data, children: children,
+            "unflatten": lambda aux_data, children: children,  # noqa: U100
             "names": lambda tree: [f"{i}" for i in range(len(tree))],
         },
     }
@@ -37,7 +37,7 @@ def _tuple():
     entry = {
         tuple: {
             "flatten": lambda tree: (list(tree), None),
-            "unflatten": lambda aux_data, children: tuple(children),
+            "unflatten": lambda aux_data, children: tuple(children),  # noqa: U100
             "names": lambda tree: [f"{i}" for i in range(len(tree))],
         },
     }

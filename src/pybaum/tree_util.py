@@ -1,5 +1,7 @@
 """Implement functionality similar to jax.tree_util in pure Python.
+
 The functions are not completely identical to jax. The most notable differences are:
+
 - Instead of a global registry of pytree nodes, most functions have a registry argument.
 - The treedef containing information to unflatten pytrees is implemented differently.
 
@@ -30,6 +32,7 @@ def tree_flatten(tree, is_leaf=None, registry=None):
     Returns:
         A pair where the first element is a list of leaf values and the second
         element is a treedef representing the structure of the flattened tree.
+
     """
     registry = _process_pytree_registry(registry)
     is_leaf = _process_is_leaf(is_leaf)
@@ -271,7 +274,7 @@ def _process_pytree_registry(registry):
 
 def _process_is_leaf(is_leaf):
     if is_leaf is None:
-        return lambda tree: False
+        return lambda tree: False  # noqa: U100
     else:
         return is_leaf
 
