@@ -1,35 +1,15 @@
 """Implement functionality similar to jax.tree_util in pure Python.
-
 The functions are not completely identical to jax. The most notable differences are:
 - Instead of a global registry of pytree nodes, most functions have a registry argument.
 - The treedef containing information to unflatten pytrees is implemented differently.
 
 """
-import numpy as np
-import pandas as pd
-
-
-DEFAULT_PYTREE_REGISTRY = {
-    list: {
-        "flatten": lambda tree: (tree, None),
-        "unflatten": lambda aux_data, children: children,
-        "names": lambda tree: [f"{i}" for i in range(len(tree))],
-    },
-    dict: {
-        "flatten": lambda tree: (list(tree.values()), list(tree)),
-        "unflatten": lambda aux_data, children: dict(zip(aux_data, children)),
-        "names": lambda tree: list(map(str, list(tree))),
-    },
-    tuple: {
-        "flatten": lambda tree: (list(tree), None),
-        "unflatten": lambda aux_data, children: tuple(children),
-        "names": lambda tree: [f"{i}" for i in range(len(tree))],
-    },
-}
+from pybaum.equality import EQUALITY_CHECKERS
+from pybaum.registry import get_registry
 
 
 def tree_flatten(tree, is_leaf=None, registry=None):
-    """Flatten a pytree.
+    """Flatten a pytree and create a treedef.
 
     Args:
         tree: a pytree to flatten.
@@ -39,7 +19,7 @@ def tree_flatten(tree, is_leaf=None, registry=None):
             stopped immediately, with the whole subtree being treated as a leaf.
         registry (dict, None or "extended"): A pytree container registry that determines
             which types are considered container objects that should be flattened.
-            `is_leaf` can override this in the sense that types that are in the
+            ``is_leaf`` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
             container that is not in the registry. None means that the default registry
             is used, i.e. that dicts, tuples and lists are considered containers.
@@ -47,7 +27,38 @@ def tree_flatten(tree, is_leaf=None, registry=None):
             considered containers. Passing a dictionary where the keys are types and the
             values are dicts with the entries "flatten", "unflatten" and "names" allows
             to completely override the default registries.
+    Returns:
+        A pair where the first element is a list of leaf values and the second
+        element is a treedef representing the structure of the flattened tree.
+    """
+    registry = _process_pytree_registry(registry)
+    is_leaf = _process_is_leaf(is_leaf)
 
+    flat = _tree_flatten(tree, is_leaf=is_leaf, registry=registry)
+    dummy_flat = ["*"] * len(flat)
+    treedef = tree_unflatten(tree, dummy_flat, is_leaf=is_leaf, registry=registry)
+    return flat, treedef
+
+
+def tree_just_flatten(tree, is_leaf, registry):
+    """Flatten a pytree without creating a treedef.
+
+    Args:
+        tree: a pytree to flatten.
+        is_leaf (callable or None): An optionally specified function that will be called
+            at each flattening step. It should return a boolean, which indicates whether
+            the flattening should traverse the current object, or if it should be
+            stopped immediately, with the whole subtree being treated as a leaf.
+        registry (dict, None or "extended"): A pytree container registry that determines
+            which types are considered container objects that should be flattened.
+            ``is_leaf`` can override this in the sense that types that are in the
+            registry are still considered a leaf but it cannot declare something a
+            container that is not in the registry. None means that the default registry
+            is used, i.e. that dicts, tuples and lists are considered containers.
+            "extended" means that in addition numpy arrays and params DataFrames are
+            considered containers. Passing a dictionary where the keys are types and the
+            values are dicts with the entries "flatten", "unflatten" and "names" allows
+            to completely override the default registries.
     Returns:
         A pair where the first element is a list of leaf values and the second
         element is a treedef representing the structure of the flattened tree.
@@ -57,9 +68,7 @@ def tree_flatten(tree, is_leaf=None, registry=None):
     is_leaf = _process_is_leaf(is_leaf)
 
     flat = _tree_flatten(tree, is_leaf=is_leaf, registry=registry)
-    dummy_flat = ["*"] * len(flat)
-    treedef = tree_unflatten(tree, dummy_flat, is_leaf=is_leaf, registry=registry)
-    return flat, treedef
+    return flat
 
 
 def _tree_flatten(tree, is_leaf, registry):
@@ -80,9 +89,7 @@ def _tree_flatten(tree, is_leaf, registry):
 
 def tree_unflatten(treedef, leaves, is_leaf=None, registry=None):
     """Reconstruct a pytree from the treedef and a list of leaves.
-
     The inverse of :func:`tree_flatten`.
-
     Args:
         treedef: the treedef to with information needed for reconstruction.
         leaves (list): the list of leaves to use for reconstruction. The list must match
@@ -105,6 +112,7 @@ def tree_unflatten(treedef, leaves, is_leaf=None, registry=None):
     Returns:
         The reconstructed pytree, containing the ``leaves`` placed in the structure
         described by ``treedef``.
+
     """
     registry = _process_pytree_registry(registry)
     is_leaf = _process_is_leaf(is_leaf)
@@ -132,7 +140,6 @@ def _tree_unflatten(treedef, leaves, is_leaf, registry):
 
 def tree_map(func, tree, is_leaf=None, registry=None):
     """Apply func to all leaves in tree.
-
     Args:
         func (callable): Function applied to each leaf in the tree.
         tree: A pytree.
@@ -150,10 +157,8 @@ def tree_map(func, tree, is_leaf=None, registry=None):
             considered containers. Passing a dictionary where the keys are types and the
             values are dicts with the entries "flatten", "unflatten" and "names" allows
             to completely override the default registries.
-
     Returns:
         modified copy of tree.
-
     """
     flat, treedef = tree_flatten(tree, is_leaf=is_leaf, registry=registry)
     modified = [func(i) for i in flat]
@@ -162,7 +167,6 @@ def tree_map(func, tree, is_leaf=None, registry=None):
 
 def tree_multimap(func, *trees, is_leaf=None, registry=None):
     """Apply func to leaves of multiple pytrees.
-
     Args:
         func (callable): Function applied to each leaf corresponding leaves of
             multiple py trees.
@@ -182,10 +186,8 @@ def tree_multimap(func, *trees, is_leaf=None, registry=None):
             considered containers. Passing a dictionary where the keys are types and the
             values are dicts with the entries "flatten", "unflatten" and "names" allows
             to completely override the default registries.
-
     Returns:
         tree with the same structure as the elements in trees.
-
     """
 
     flat_trees, treedefs = [], []
@@ -206,7 +208,6 @@ def tree_multimap(func, *trees, is_leaf=None, registry=None):
 
 def leaf_names(tree, is_leaf=None, registry=None, separator="_"):
     """Construct names for leaves in a pytree.
-
     Args:
         tree: a pytree to flatten.
         is_leaf (callable or None): An optionally specified function that will be called
@@ -224,10 +225,8 @@ def leaf_names(tree, is_leaf=None, registry=None, separator="_"):
             values are dicts with the entries "flatten", "unflatten" and "names" allows
             to completely override the default registries.
         separator (str): String that separates the building blocks of the leaf name.
-
     Returns:
         list: List of strings with names for pytree leaves.
-
     """
     registry = _process_pytree_registry(registry)
     is_leaf = _process_is_leaf(is_leaf)
@@ -266,7 +265,7 @@ def _add_prefix(prefix, string, separator):
 
 
 def _process_pytree_registry(registry):
-    registry = DEFAULT_PYTREE_REGISTRY if registry is None else registry
+    registry = registry if registry is not None else get_registry()
     return registry
 
 
@@ -280,8 +279,9 @@ def _process_is_leaf(is_leaf):
 def tree_equal(tree, other, is_leaf=None, registry=None):
     """Determine if two pytrees are equal.
 
-    Note: Only works for pytrees containing leaves that can be compared using ``==``
-    as well es numpy arrays, pandas.Series and pandas.DataFrames.
+    Two pytrees are considered equal if their leaves are equal and the names of their
+    leaves are equal. While this definition of equality might not always make sense
+    it makes sense in most cases and can be implemented relatively easily.
 
     Args:
         tree: A pytree.
@@ -305,30 +305,26 @@ def tree_equal(tree, other, is_leaf=None, registry=None):
         bool
 
     """
-    first_flat, first_treedef = tree_flatten(tree, is_leaf=is_leaf, registry=registry)
-    second_flat, second_treedef = tree_flatten(
-        other, is_leaf=is_leaf, registry=registry
-    )
+    first_flat = tree_just_flatten(tree, is_leaf=is_leaf, registry=registry)
+    second_flat = tree_just_flatten(other, is_leaf=is_leaf, registry=registry)
 
-    equal = first_treedef == second_treedef
+    first_names = leaf_names(tree, is_leaf=is_leaf, registry=registry)
+    second_names = leaf_names(tree, is_leaf=is_leaf, registry=registry)
+
+    equal = first_names == second_names
+
     for first, second in zip(first_flat, second_flat):
-        if isinstance(first, np.ndarray):
-            eq = (first == second).all()
-        elif isinstance(first, (pd.DataFrame, pd.Series)):
-            eq = first.equals(second)
-        else:
-            eq = first == second
-        equal = equal and eq
+        check_func = EQUALITY_CHECKERS.get(type(first), lambda a, b: a == b)
+        equal = equal and check_func(first, second)
+
     return equal
 
 
 def tree_update(tree, other, is_leaf=None, registry=None):
     """Update leaves in a pytree with leaves from another pytree.
-
     The second pytree must be compatible with the first one but can be smaller.
     For example, lists can be shorter, dictionaries can contain subsets of entries,
     etc.
-
     Args:
         tree: A pytree.
         other: Another pytree.
@@ -346,10 +342,8 @@ def tree_update(tree, other, is_leaf=None, registry=None):
             considered containers. Passing a dictionary where the keys are types and the
             values are dicts with the entries "flatten", "unflatten" and "names" allows
             to completely override the default registries.
-
     Returns:
         Updated pytree.
-
     """
     first_flat, first_treedef = tree_flatten(tree, is_leaf=is_leaf, registry=registry)
     first_names = leaf_names(tree, is_leaf=is_leaf, registry=registry)

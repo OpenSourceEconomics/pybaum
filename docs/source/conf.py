@@ -15,7 +15,7 @@ from pkg_resources import get_distribution
 
 year = dt.datetime.now().year
 
-author = "Janos Gabler"
+author = "Janos Gabler, Tobias Raabe"
 
 # Set variable so that todos are shown in local build
 on_rtd = os.environ.get("READTHEDOCS") == "True"

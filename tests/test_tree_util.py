@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_array_almost_equal as aaae
+from pybaum.registry import get_registry
 from pybaum.tree_util import leaf_names
 from pybaum.tree_util import tree_equal
 from pybaum.tree_util import tree_flatten
@@ -41,15 +42,55 @@ def extended_treedef():
     )
 
 
+@pytest.fixture
+def extended_registry():
+    types = ["pandas.DataFrame", "pandas.Series", "numpy.ndarray"]
+    options = {"pandas.DataFrame": {"columns": "value"}}
+    return get_registry(types=types, options=options)
+
+
 def test_tree_flatten(example_tree, example_flat, example_treedef):
     flat, treedef = tree_flatten(example_tree)
     assert treedef == example_treedef
     _assert_list_with_arrays_is_equal(flat, example_flat)
 
 
+def test_extended_tree_flatten(example_tree, extended_treedef, extended_registry):
+    flat, treedef = tree_flatten(example_tree, registry=extended_registry)
+    assert flat == list(range(7))
+    assert tree_equal(treedef, extended_treedef)
+
+
+def test_tree_flatten_with_is_leave(example_tree, extended_registry):
+    flat, _ = tree_flatten(
+        example_tree,
+        is_leaf=lambda tree: isinstance(tree, np.ndarray),
+        registry=extended_registry,
+    )
+    expected_flat = [0, np.array([1, 2]), 3, 4, 5, 6]
+    _assert_list_with_arrays_is_equal(flat, expected_flat)
+
+
 def test_tree_unflatten(example_flat, example_treedef, example_tree):
     unflat = tree_unflatten(example_treedef, example_flat)
 
+    assert tree_equal(unflat, example_tree)
+
+
+def test_extended_tree_unflatten(example_tree, extended_treedef, extended_registry):
+    unflat = tree_unflatten(
+        extended_treedef, list(range(7)), registry=extended_registry
+    )
+    assert tree_equal(unflat, example_tree)
+
+
+def test_tree_unflatten_with_is_leaf(example_tree, extended_registry):
+    unflat = tree_unflatten(
+        example_tree,
+        ([0, np.array([1, 2]), 3, 4, 5, 6]),
+        is_leaf=lambda tree: isinstance(tree, np.ndarray),
+        registry=extended_registry,
+    )
     assert tree_equal(unflat, example_tree)
 
 
@@ -74,6 +115,47 @@ def test_leaf_names(example_tree):
     assert names == expected_names
 
 
+def test_extended_leaf_names(example_tree, extended_registry):
+    names = leaf_names(example_tree, registry=extended_registry)
+    expected_names = ["0_0", "0_1_0", "0_1_1", "0_2_a_c", "0_2_a_d", "0_2_b", "1"]
+    assert names == expected_names
+
+
+def test_leaf_names_with_is_leaf(example_tree, extended_registry):
+    names = leaf_names(
+        example_tree,
+        is_leaf=lambda tree: isinstance(tree, np.ndarray),
+        registry=extended_registry,
+    )
+    expected_names = ["0_0", "0_1", "0_2_a_c", "0_2_a_d", "0_2_b", "1"]
+    assert names == expected_names
+
+
+def test_iterative_flatten_and_one_step_flatten_and_unflatten(
+    example_tree, extended_registry
+):
+    first_step_flat, first_step_treedef = tree_flatten(example_tree)
+    second_step_flat, second_step_treedef = tree_flatten(
+        first_step_flat, registry=extended_registry
+    )
+    one_step_flat, one_step_treedef = tree_flatten(
+        example_tree, registry=extended_registry
+    )
+
+    assert second_step_flat == one_step_flat
+
+    one_step_unflat = tree_unflatten(
+        one_step_treedef, one_step_flat, registry=extended_registry
+    )
+    first_step_unflat = tree_unflatten(
+        second_step_treedef, second_step_flat, registry=extended_registry
+    )
+    second_step_unflat = tree_unflatten(first_step_treedef, first_step_unflat)
+
+    assert tree_equal(one_step_unflat, example_tree)
+    assert tree_equal(second_step_unflat, example_tree)
+
+
 def test_tree_update(example_tree):
     other = ([7, np.array([8, 9]), {"b": 10}], 11)
     updated = tree_update(example_tree, other)
@@ -93,3 +175,24 @@ def _assert_list_with_arrays_is_equal(list1, list2):
             assert first.equals(second)
         else:
             assert first == second
+
+
+def test_flatten_df_with_value_column(extended_registry):
+    df = pd.DataFrame(index=["a", "b", "c"])
+    df["value"] = [1, 2, 3]
+    df["bla"] = [4, 5, 6]
+
+    flat, _ = tree_flatten(df, registry=extended_registry)
+
+    assert flat == [1, 2, 3]
+
+
+def test_flatten_df_all_columns():
+    registry = get_registry(types=["pandas.DataFrame"])
+    df = pd.DataFrame(index=["a", "b", "c"])
+    df["value"] = [1, 2, 3]
+    df["bla"] = [4, 5, 6]
+
+    flat, _ = tree_flatten(df, registry=registry)
+
+    assert flat == [1, 2, 3, 4, 5, 6]
