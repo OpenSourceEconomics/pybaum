@@ -171,7 +171,8 @@ def tree_map(func, tree, is_leaf=None, registry=None):
     """
     flat, treedef = tree_flatten(tree, is_leaf=is_leaf, registry=registry)
     modified = [func(i) for i in flat]
-    return tree_unflatten(treedef, modified, is_leaf=is_leaf, registry=registry)
+    new_tree = tree_unflatten(treedef, modified, is_leaf=is_leaf, registry=registry)
+    return new_tree
 
 
 def tree_multimap(func, *trees, is_leaf=None, registry=None):
@@ -212,8 +213,10 @@ def tree_multimap(func, *trees, is_leaf=None, registry=None):
 
     modified = [func(*item) for item in zip(*flat_trees)]
 
-    out = tree_unflatten(treedefs[0], modified, is_leaf=is_leaf, registry=registry)
-    return out
+    new_trees = tree_unflatten(
+        treedefs[0], modified, is_leaf=is_leaf, registry=registry
+    )
+    return new_trees
 
 
 def leaf_names(tree, is_leaf=None, registry=None, separator="_"):
@@ -242,7 +245,10 @@ def leaf_names(tree, is_leaf=None, registry=None, separator="_"):
     """
     registry = _process_pytree_registry(registry)
     is_leaf = _process_is_leaf(is_leaf)
-    return _leaf_names(tree, is_leaf=is_leaf, registry=registry, separator=separator)
+    leaf_names = _leaf_names(
+        tree, is_leaf=is_leaf, registry=registry, separator=separator
+    )
+    return leaf_names
 
 
 def _leaf_names(tree, is_leaf, registry, separator, prefix=None):
@@ -288,7 +294,7 @@ def _process_is_leaf(is_leaf):
         return is_leaf
 
 
-def tree_equal(tree, other, is_leaf=None, registry=None):
+def tree_equal(tree, other, is_leaf=None, registry=None, equality_checkers=None):
     """Determine if two pytrees are equal.
 
     Two pytrees are considered equal if their leaves are equal and the names of their
@@ -312,11 +318,19 @@ def tree_equal(tree, other, is_leaf=None, registry=None):
             considered containers. Passing a dictionary where the keys are types and the
             values are dicts with the entries "flatten", "unflatten" and "names" allows
             to completely override the default registries.
+        equality_checkers (dict, None): A dictionary where keys are types and values are
+            functions which assess equality for the type of object.
 
     Returns:
         bool
 
     """
+    equality_checkers = (
+        EQUALITY_CHECKERS
+        if equality_checkers is None
+        else {**EQUALITY_CHECKERS, **equality_checkers}
+    )
+
     first_flat = tree_just_flatten(tree, is_leaf=is_leaf, registry=registry)
     second_flat = tree_just_flatten(other, is_leaf=is_leaf, registry=registry)
 
@@ -325,9 +339,12 @@ def tree_equal(tree, other, is_leaf=None, registry=None):
 
     equal = first_names == second_names
 
-    for first, second in zip(first_flat, second_flat):
-        check_func = EQUALITY_CHECKERS.get(type(first), lambda a, b: a == b)
-        equal = equal and check_func(first, second)
+    if equal:
+        for first, second in zip(first_flat, second_flat):
+            check_func = equality_checkers.get(type(first), lambda a, b: a == b)
+            equal = equal and check_func(first, second)
+            if not equal:
+                break
 
     return equal
 
