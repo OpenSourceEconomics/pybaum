@@ -1,0 +1,30 @@
+name: pybaum
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python >=3.9
+  - pip
+  - setuptools_scm
+  - toml
+
+  # Testing
+  - pre-commit
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - tox-conda
+
+  # Documentation
+  - sphinx >=4
+  - pydata-sphinx-theme>=0.3.0
+  - sphinx-panels
+
+  # Development
+  - jupyterlab
+  - nbsphinx
+  - pdbpp
+  - numpy
+  - pandas
