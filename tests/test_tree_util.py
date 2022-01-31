@@ -103,7 +103,7 @@ def test_tree_map():
 
 def test_tree_multimap():
     tree = [{"a": 1, "b": 2, "c": {"d": 3, "e": 4}}]
-    mapped = tree_map(lambda x: x ** 2, tree)
+    mapped = tree_map(lambda x: x**2, tree)
     multimapped = tree_multimap(lambda x, y: x * y, tree, tree)
     assert mapped == multimapped
 
