@@ -44,7 +44,7 @@ def tree_flatten(tree, is_leaf=None, registry=None):
     return flat, treedef
 
 
-def tree_just_flatten(tree, is_leaf, registry):
+def tree_just_flatten(tree, is_leaf=None, registry=None):
     """Flatten a pytree without creating a treedef.
 
     Args:
