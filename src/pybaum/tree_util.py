@@ -128,7 +128,7 @@ def tree_yield(tree, is_leaf=None, registry=None):
     return flat, treedef
 
 
-def tree_just_yield(tree, is_leaf, registry):
+def tree_just_yield(tree, is_leaf=None, registry=None):
     """Yield leafs from a pytree without creating a treedef.
 
     Args:
