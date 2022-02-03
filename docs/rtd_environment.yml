@@ -3,15 +3,16 @@ channels:
 
 dependencies:
   - python=3.8
-  - ipython
   - pip
   - setuptools_scm
   - toml
 
+  # Documentation
   - sphinx
-  - pydata-sphinx-theme>=0.3.0
-  - nbsphinx
+  - sphinx-autoapi
+  - sphinx-copybutton
   - sphinx-panels
+  - pydata-sphinx-theme>=0.3.0
 
   - pip:
       - ../
