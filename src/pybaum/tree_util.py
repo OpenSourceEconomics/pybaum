@@ -6,6 +6,8 @@ The functions are not completely identical to jax. The most notable differences 
 - The treedef containing information to unflatten pytrees is implemented differently.
 
 """
+import itertools
+
 from pybaum.equality import EQUALITY_CHECKERS
 from pybaum.registry import get_registry
 
@@ -89,6 +91,87 @@ def _tree_flatten(tree, is_leaf, registry):
                 out += _tree_flatten(subtree, is_leaf, registry)
             else:
                 out.append(subtree)
+    return out
+
+
+def tree_yield(tree, is_leaf=None, registry=None):
+    """Yield leafs from a pytree and create the tree definition.
+
+    Args:
+        tree: a pytree.
+        is_leaf (callable or None): An optionally specified function that will be called
+            at each yield step. It should return a boolean, which indicates whether
+            the generator should traverse the current object, or if it should be
+            stopped immediately, with the whole subtree being treated as a leaf.
+        registry (dict, None or "extended"): A pytree container registry that determines
+            which types are considered container objects that should be yielded.
+            ``is_leaf`` can override this in the sense that types that are in the
+            registry are still considered a leaf but it cannot declare something a
+            container that is not in the registry. None means that the default registry
+            is used, i.e. that dicts, tuples and lists are considered containers.
+            "extended" means that in addition numpy arrays and params DataFrames are
+            considered containers. Passing a dictionary where the keys are types and the
+            values are dicts with the entries "flatten", "unflatten" and "names" allows
+            to completely override the default registries.
+
+    Returns:
+        A pair where the first element is a generator of leaf values and the second
+        element is a treedef representing the structure of the flattened tree.
+
+    """
+    registry = _process_pytree_registry(registry)
+    is_leaf = _process_is_leaf(is_leaf)
+
+    flat = _tree_yield(tree, is_leaf=is_leaf, registry=registry)
+    dummy_flat = itertools.repeat("*")
+    treedef = tree_unflatten(tree, dummy_flat, is_leaf=is_leaf, registry=registry)
+    return flat, treedef
+
+
+def tree_just_yield(tree, is_leaf, registry):
+    """Yield leafs from a pytree without creating a treedef.
+
+    Args:
+        tree: a pytree.
+        is_leaf (callable or None): An optionally specified function that will be called
+            at each yield step. It should return a boolean, which indicates whether
+            the generator should traverse the current object, or if it should be
+            stopped immediately, with the whole subtree being treated as a leaf.
+        registry (dict, None or "extended"): A pytree container registry that determines
+            which types are considered container objects that should be yielded.
+            ``is_leaf`` can override this in the sense that types that are in the
+            registry are still considered a leaf but it cannot declare something a
+            container that is not in the registry. None means that the default registry
+            is used, i.e. that dicts, tuples and lists are considered containers.
+            "extended" means that in addition numpy arrays and params DataFrames are
+            considered containers. Passing a dictionary where the keys are types and the
+            values are dicts with the entries "flatten", "unflatten" and "names" allows
+            to completely override the default registries.
+
+    Returns:
+        A generator of leaf values.
+
+    """
+    registry = _process_pytree_registry(registry)
+    is_leaf = _process_is_leaf(is_leaf)
+
+    flat = _tree_yield(tree, is_leaf=is_leaf, registry=registry)
+    return flat
+
+
+def _tree_yield(tree, is_leaf, registry):
+    out = []
+    tree_type = type(tree)
+
+    if tree_type not in registry or is_leaf(tree):
+        yield tree
+    else:
+        subtrees, _ = registry[tree_type]["flatten"](tree)
+        for subtree in subtrees:
+            if type(subtree) in registry:
+                yield from _tree_yield(subtree, is_leaf, registry)
+            else:
+                yield subtree
     return out
 
 
