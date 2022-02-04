@@ -7,10 +7,11 @@ releases are available on `Anaconda.org
 <https://anaconda.org/OpenSourceEconomics/pybaum>`_.
 
 
-0.x.x - 2022-xx-xx
+0.1.x - 2022-xx-xx
 ------------------
 
 - :gh:`2` replaces the pre-commit pipeline step with pre-commit.ci.
+- :gh:`10` adds default arguments to ``tree_just_flatten``.
 - :gh:`12` adds a section about the API to the docs.
 
 
