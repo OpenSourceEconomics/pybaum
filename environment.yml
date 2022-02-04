@@ -19,8 +19,10 @@ dependencies:
 
   # Documentation
   - sphinx >=4
-  - pydata-sphinx-theme>=0.3.0
+  - sphinx-autoapi
+  - sphinx-copybutton
   - sphinx-panels
+  - pydata-sphinx-theme>=0.3.0
 
   # Development
   - jupyterlab

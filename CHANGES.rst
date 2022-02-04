@@ -11,6 +11,7 @@ releases are available on `Anaconda.org
 ------------------
 
 - :gh:`2` replaces the pre-commit pipeline step with pre-commit.ci.
+- :gh:`12` adds a section about the API to the docs.
 
 
 0.1.0 - 2022-01-28
