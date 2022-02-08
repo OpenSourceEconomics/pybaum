@@ -21,7 +21,7 @@ def tree_flatten(tree, is_leaf=None, registry=None):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             ``is_leaf`` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -46,7 +46,7 @@ def tree_flatten(tree, is_leaf=None, registry=None):
     return flat, treedef
 
 
-def tree_just_flatten(tree, is_leaf, registry):
+def tree_just_flatten(tree, is_leaf=None, registry=None):
     """Flatten a pytree without creating a treedef.
 
     Args:
@@ -55,7 +55,7 @@ def tree_just_flatten(tree, is_leaf, registry):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             ``is_leaf`` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -103,7 +103,7 @@ def tree_yield(tree, is_leaf=None, registry=None):
             at each yield step. It should return a boolean, which indicates whether
             the generator should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be yielded.
             ``is_leaf`` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -137,7 +137,7 @@ def tree_just_yield(tree, is_leaf=None, registry=None):
             at each yield step. It should return a boolean, which indicates whether
             the generator should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be yielded.
             ``is_leaf`` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -188,7 +188,7 @@ def tree_unflatten(treedef, leaves, is_leaf=None, registry=None):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             `is_leaf` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -238,7 +238,7 @@ def tree_map(func, tree, is_leaf=None, registry=None):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             `is_leaf` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -270,7 +270,7 @@ def tree_multimap(func, *trees, is_leaf=None, registry=None):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             `is_leaf` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -311,7 +311,7 @@ def leaf_names(tree, is_leaf=None, registry=None, separator="_"):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             `is_leaf` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -391,7 +391,7 @@ def tree_equal(tree, other, is_leaf=None, registry=None, equality_checkers=None)
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             `is_leaf` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
@@ -445,7 +445,7 @@ def tree_update(tree, other, is_leaf=None, registry=None):
             at each flattening step. It should return a boolean, which indicates whether
             the flattening should traverse the current object, or if it should be
             stopped immediately, with the whole subtree being treated as a leaf.
-        registry (dict, None or "extended"): A pytree container registry that determines
+        registry (dict or None): A pytree container registry that determines
             which types are considered container objects that should be flattened.
             `is_leaf` can override this in the sense that types that are in the
             registry are still considered a leaf but it cannot declare something a
