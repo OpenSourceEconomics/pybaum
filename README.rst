@@ -21,8 +21,8 @@ pybaum
     :alt: PyPI - License
     :target: https://pypi.org/project/pybaum
 
-.. image:: https://readthedocs.org/projects/OpenSourceEconomics/badge/?version=latest
-    :target: https://OpenSourceEconomics.readthedocs.io/en/latest
+.. image:: https://readthedocs.org/projects/pybaum/badge/?version=latest
+    :target: https://pybaum.readthedocs.io/en/latest
 
 .. image:: https://img.shields.io/github/workflow/status/OpenSourceEconomics/pybaum/main/main
    :target: https://github.com/OpenSourceEconomics/pybaum/actions?query=branch%3Amain
