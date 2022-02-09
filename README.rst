@@ -39,6 +39,24 @@ pybaum
 
 .. end-badges
 
+Installation
+------------
+
+pybaum is available on `PyPI <https://pypi.org/project/pybaum>`_ and `Anaconda.org
+<https://anaconda.org/conda-forge/pybaum>`_. Install it with
+
+.. code-block:: console
+
+    $ pip install pybaum
+
+    # or
+
+    $ conda install -c conda-forge pybaum
+
+
+About
+-----
+
 pybaum provides tools to work with pytrees which is a concept burrowed from `JAX
 <https://jax.readthedocs.io/en/latest/>`_.
 
