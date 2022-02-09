@@ -1,3 +1,5 @@
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,6 +12,7 @@ from pybaum.tree_util import tree_map
 from pybaum.tree_util import tree_multimap
 from pybaum.tree_util import tree_unflatten
 from pybaum.tree_util import tree_update
+from pybaum.tree_util import tree_yield
 
 
 @pytest.fixture
@@ -196,3 +199,15 @@ def test_flatten_df_all_columns():
     flat, _ = tree_flatten(df, registry=registry)
 
     assert flat == [1, 2, 3, 4, 5, 6]
+
+
+def test_tree_yield(example_tree, example_treedef, example_flat):
+    generator, treedef = tree_yield(example_tree)
+
+    assert treedef == example_treedef
+    assert inspect.isgenerator(generator)
+    for a, b in zip(generator, example_flat):
+        if isinstance(a, (np.ndarray, pd.Series)):
+            aaae(a, b)
+        else:
+            assert a == b
