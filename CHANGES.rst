@@ -15,6 +15,7 @@ releases are available on `Anaconda.org
   :func:`pybaum.tree_util.tree_just_yield`.
 - :gh:`10` adds default arguments to ``tree_just_flatten``.
 - :gh:`12` adds a section about the API to the docs.
+- :gh:`13` extends the readme.
 
 
 0.1.0 - 2022-01-28
