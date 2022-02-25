@@ -1,4 +1,5 @@
 import itertools
+from collections import namedtuple
 from functools import partial
 
 from pybaum.config import IS_NUMPY_INSTALLED
@@ -53,6 +54,23 @@ def _tuple():
         },
     }
     return entry
+
+
+def _namedtuple():
+    entry = {
+        namedtuple: {
+            "flatten": lambda tree: (list(tree), tree),
+            "unflatten": _unflatten_namedtuple,
+            "names": lambda tree: list(tree._fields),
+        },
+    }
+    return entry
+
+
+def _unflatten_namedtuple(aux_data, leaves):
+    replacements = dict(zip(aux_data._fields, leaves))
+    out = aux_data._replace(**replacements)
+    return out
 
 
 def _numpy_array():
@@ -173,4 +191,5 @@ FUNC_DICT = {
     "pandas.Series": _pandas_series,
     "pandas.DataFrame": _pandas_dataframe,
     "None": _none,
+    "namedtuple": _namedtuple,
 }

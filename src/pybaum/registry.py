@@ -28,7 +28,7 @@ def get_registry(types=None, options=None, include_defaults=True):
     types = [] if types is None else types
 
     if include_defaults:
-        types = list(set(types) | {"list", "tuple", "dict", "None"})
+        types = list(set(types) | {"list", "tuple", "dict", "None", "namedtuple"})
 
     options = {} if options is None else options
 

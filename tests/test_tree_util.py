@@ -1,4 +1,5 @@
 import inspect
+from collections import namedtuple
 
 import numpy as np
 import pandas as pd
@@ -217,3 +218,20 @@ def test_flatten_with_none():
     flat, treedef = tree_flatten(None)
     assert flat == []
     assert treedef is None
+
+
+def test_leaf_names_with_none():
+    names = leaf_names(None)
+    assert names == []
+
+
+def test_flatten_with_namedtuple():
+    bla = namedtuple("bla", ["a", "b"])(1, 2)
+    flat, _ = tree_flatten(bla)
+    assert flat == [1, 2]
+
+
+def test_names_with_namedtuple():
+    bla = namedtuple("bla", ["a", "b"])(1, 2)
+    names = leaf_names(bla)
+    assert names == ["a", "b"]
