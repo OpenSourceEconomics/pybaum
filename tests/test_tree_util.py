@@ -1,5 +1,6 @@
 import inspect
 from collections import namedtuple
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -234,4 +235,16 @@ def test_flatten_with_namedtuple():
 def test_names_with_namedtuple():
     bla = namedtuple("bla", ["a", "b"])(1, 2)
     names = leaf_names(bla)
+    assert names == ["a", "b"]
+
+
+def test_flatten_with_ordered_dict():
+    d = OrderedDict({"a": 1, "b": 2})
+    flat, _ = tree_flatten(d)
+    assert flat == [1, 2]
+
+
+def test_names_with_ordered_dict():
+    d = OrderedDict({"a": 1, "b": 2})
+    names = leaf_names(d)
     assert names == ["a", "b"]

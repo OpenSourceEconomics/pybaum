@@ -1,5 +1,6 @@
 import itertools
 from collections import namedtuple
+from collections import OrderedDict
 from functools import partial
 
 from pybaum.config import IS_NUMPY_INSTALLED
@@ -71,6 +72,19 @@ def _unflatten_namedtuple(aux_data, leaves):
     replacements = dict(zip(aux_data._fields, leaves))
     out = aux_data._replace(**replacements)
     return out
+
+
+def _ordereddict():
+    entry = {
+        OrderedDict: {
+            "flatten": lambda tree: (list(tree.values()), list(tree)),
+            "unflatten": lambda aux_data, children: OrderedDict(
+                zip(aux_data, children)
+            ),
+            "names": lambda tree: list(map(str, list(tree))),
+        },
+    }
+    return entry
 
 
 def _numpy_array():
@@ -192,4 +206,5 @@ FUNC_DICT = {
     "pandas.DataFrame": _pandas_dataframe,
     "None": _none,
     "namedtuple": _namedtuple,
+    "OrderedDict": _ordereddict,
 }
