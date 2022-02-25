@@ -211,3 +211,9 @@ def test_tree_yield(example_tree, example_treedef, example_flat):
             aaae(a, b)
         else:
             assert a == b
+
+
+def test_flatten_with_none():
+    flat, treedef = tree_flatten(None)
+    assert flat == []
+    assert treedef is None

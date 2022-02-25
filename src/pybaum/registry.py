@@ -18,7 +18,8 @@ def get_registry(types=None, options=None, include_defaults=True):
             values are keyword arguments that influence how containers are flattened
             and unflattened.
         include_defaults (bool): Whether the default pytree containers "tuple", "dict"
-            and "list" should be included even if not specified in `types`.
+            "list", "None", "namedtuple" and "OrderedDict" should be included even if
+            not specified in `types`.
 
     Returns:
         dict: A pytree registry.
@@ -27,7 +28,7 @@ def get_registry(types=None, options=None, include_defaults=True):
     types = [] if types is None else types
 
     if include_defaults:
-        types = list(set(types) | {"list", "tuple", "dict"})
+        types = list(set(types) | {"list", "tuple", "dict", "None"})
 
     options = {} if options is None else options
 

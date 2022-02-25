@@ -11,6 +11,17 @@ if IS_PANDAS_INSTALLED:
     import pandas as pd
 
 
+def _none():
+    entry = {
+        type(None): {
+            "flatten": lambda tree: ([], None),  # noqa: U100
+            "unflatten": lambda aux_data, children: None,  # noqa: U100
+            "names": lambda tree: [],  # noqa: U100
+        }
+    }
+    return entry
+
+
 def _list():
     entry = {
         list: {
@@ -161,4 +172,5 @@ FUNC_DICT = {
     "numpy.ndarray": _numpy_array,
     "pandas.Series": _pandas_series,
     "pandas.DataFrame": _pandas_dataframe,
+    "None": _none,
 }
