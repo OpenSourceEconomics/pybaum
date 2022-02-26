@@ -1,7 +1,7 @@
 from pybaum.registry_entries import FUNC_DICT
 
 
-def get_registry(types=None, options=None, include_defaults=True):
+def get_registry(types=None, include_defaults=True):
     """Create a pytree registry.
 
     Args:
@@ -11,12 +11,12 @@ def get_registry(types=None, options=None, include_defaults=True):
             - "tuple"
             - "dict"
             - "list"
+            - "namedtuple"
+            - "None"
+            - "OrderedDict"
             - "numpy.ndarray"
             - "pandas.Series"
             - "pandas.DataFrame"
-        options (dict): Option dictionary where the keys are names of types and the
-            values are keyword arguments that influence how containers are flattened
-            and unflattened.
         include_defaults (bool): Whether the default pytree containers "tuple", "dict"
             "list", "None", "namedtuple" and "OrderedDict" should be included even if
             not specified in `types`.
@@ -31,11 +31,9 @@ def get_registry(types=None, options=None, include_defaults=True):
         default_types = {"list", "tuple", "dict", "None", "namedtuple", "OrderedDict"}
         types = list(set(types) | default_types)
 
-    options = {} if options is None else options
-
     registry = {}
     for typ in types:
-        new_entry = FUNC_DICT[typ](**options.get(typ, {}))
+        new_entry = FUNC_DICT[typ]()
         registry = {**registry, **new_entry}
 
     return registry

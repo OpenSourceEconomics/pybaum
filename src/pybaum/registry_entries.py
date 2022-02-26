@@ -1,7 +1,7 @@
 import itertools
 from collections import namedtuple
 from collections import OrderedDict
-from functools import partial
+from itertools import product
 
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
@@ -135,14 +135,14 @@ def _pandas_series():
     return entry
 
 
-def _pandas_dataframe(columns=None):
+def _pandas_dataframe():
     """Create registry entry for pandas.DataFrame."""
     if IS_PANDAS_INSTALLED:
         entry = {
             pd.DataFrame: {
-                "flatten": partial(_flatten_pandas_dataframe, columns=columns),
-                "unflatten": partial(_unflatten_pandas_dataframe),
-                "names": partial(_get_names_pandas_dataframe, columns=columns),
+                "flatten": _flatten_pandas_dataframe,
+                "unflatten": _unflatten_pandas_dataframe,
+                "names": _get_names_pandas_dataframe,
             }
         }
     else:
@@ -150,55 +150,34 @@ def _pandas_dataframe(columns=None):
     return entry
 
 
-def _flatten_pandas_dataframe(df, columns):
-    columns = _process_columns(df, columns)
-    flat = []
-    for col in columns:
-        flat += df[col].tolist()
-
-    aux_data = (columns, df.drop(columns=columns))
+def _flatten_pandas_dataframe(df):
+    flat = df.to_numpy().flatten().tolist()
+    aux_data = {"columns": df.columns, "index": df.index, "shape": df.shape}
     return flat, aux_data
 
 
 def _unflatten_pandas_dataframe(aux_data, leaves):
-    columns, empty_df = aux_data
-    out = empty_df.copy()
-    remaining_leaves = leaves
-    for col in columns:
-        out[col] = leaves[: len(empty_df)]
-        remaining_leaves = remaining_leaves[len(empty_df) :]
+    out = pd.DataFrame(
+        data=np.array(leaves).reshape(aux_data["shape"]),
+        columns=aux_data["columns"],
+        index=aux_data["index"],
+    )
     return out
 
 
-def _get_names_pandas_dataframe(df, columns):
-    columns = _process_columns(df, columns)
-    if len(columns) == 1:
-        out = list(df.index.map(_index_element_to_string))
-    else:
-        out = []
-        for col in df.columns:
-            out += list(df.index.map(partial(_index_element_to_string, prefix=col)))
+def _get_names_pandas_dataframe(df):
+    index_strings = list(df.index.map(_index_element_to_string))
+    out = ["_".join([loc, col]) for loc, col in product(index_strings, df.columns)]
     return out
 
 
-def _process_columns(df, columns):
-    if columns is None:
-        columns = df.columns
-    elif not isinstance(columns, list):
-        columns = [columns]
-    return columns
-
-
-def _index_element_to_string(element, prefix=None):
-    separator = "_"
+def _index_element_to_string(element):
     if isinstance(element, (tuple, list)):
         as_strings = [str(entry) for entry in element]
-        res_string = separator.join(as_strings)
+        res_string = "_".join(as_strings)
     else:
         res_string = str(element)
 
-    if prefix is not None:
-        res_string = separator.join([prefix, res_string])
     return res_string
 
 
