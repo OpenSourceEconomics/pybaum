@@ -14,6 +14,7 @@ if IS_PANDAS_INSTALLED:
 
 
 def _none():
+    """Create registry entry for NoneType."""
     entry = {
         type(None): {
             "flatten": lambda tree: ([], None),  # noqa: U100
@@ -25,6 +26,7 @@ def _none():
 
 
 def _list():
+    """Create registry entry for list."""
     entry = {
         list: {
             "flatten": lambda tree: (tree, None),
@@ -36,6 +38,7 @@ def _list():
 
 
 def _dict():
+    """Create registry entry for dict."""
     entry = {
         dict: {
             "flatten": lambda tree: (list(tree.values()), list(tree)),
@@ -47,6 +50,7 @@ def _dict():
 
 
 def _tuple():
+    """Create registry entry for tuple."""
     entry = {
         tuple: {
             "flatten": lambda tree: (list(tree), None),
@@ -58,6 +62,7 @@ def _tuple():
 
 
 def _namedtuple():
+    """Create registry entry for namedtuple and NamedTuple."""
     entry = {
         namedtuple: {
             "flatten": lambda tree: (list(tree), tree),
@@ -75,6 +80,7 @@ def _unflatten_namedtuple(aux_data, leaves):
 
 
 def _ordereddict():
+    """Create registry entry for OrderedDict."""
     entry = {
         OrderedDict: {
             "flatten": lambda tree: (list(tree.values()), list(tree)),
@@ -88,11 +94,8 @@ def _ordereddict():
 
 
 def _numpy_array():
-    """Create a pytree declaration for numpy arrays.
+    """Create registry entry for numpy.ndarray."""
 
-    To-Do: Add optional axis argument.
-
-    """
     if IS_NUMPY_INSTALLED:
         entry = {
             np.ndarray: {
@@ -115,6 +118,7 @@ def _array_element_names(arr):
 
 
 def _pandas_series():
+    """Create registry entry for pandas.Series."""
     if IS_PANDAS_INSTALLED:
         entry = {
             pd.Series: {
@@ -132,6 +136,7 @@ def _pandas_series():
 
 
 def _pandas_dataframe(columns=None):
+    """Create registry entry for pandas.DataFrame."""
     if IS_PANDAS_INSTALLED:
         entry = {
             pd.DataFrame: {
