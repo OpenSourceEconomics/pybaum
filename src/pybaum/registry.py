@@ -11,9 +11,9 @@ def get_registry(types=None, include_defaults=True):
             - "tuple"
             - "dict"
             - "list"
-            - "namedtuple"
-            - "None"
-            - "OrderedDict"
+            - :class:`collections.namedtuple` or :class:`typing.NamedTuple`
+            - :obj:`None`
+            - :class:`collections.OrderedDict`
             - "numpy.ndarray"
             - "pandas.Series"
             - "pandas.DataFrame"
