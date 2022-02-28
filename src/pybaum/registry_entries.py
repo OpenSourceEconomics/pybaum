@@ -1,5 +1,7 @@
 import itertools
-from functools import partial
+from collections import namedtuple
+from collections import OrderedDict
+from itertools import product
 
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
@@ -11,7 +13,20 @@ if IS_PANDAS_INSTALLED:
     import pandas as pd
 
 
+def _none():
+    """Create registry entry for NoneType."""
+    entry = {
+        type(None): {
+            "flatten": lambda tree: ([], None),  # noqa: U100
+            "unflatten": lambda aux_data, children: None,  # noqa: U100
+            "names": lambda tree: [],  # noqa: U100
+        }
+    }
+    return entry
+
+
 def _list():
+    """Create registry entry for list."""
     entry = {
         list: {
             "flatten": lambda tree: (tree, None),
@@ -23,6 +38,7 @@ def _list():
 
 
 def _dict():
+    """Create registry entry for dict."""
     entry = {
         dict: {
             "flatten": lambda tree: (list(tree.values()), list(tree)),
@@ -34,6 +50,7 @@ def _dict():
 
 
 def _tuple():
+    """Create registry entry for tuple."""
     entry = {
         tuple: {
             "flatten": lambda tree: (list(tree), None),
@@ -44,12 +61,41 @@ def _tuple():
     return entry
 
 
+def _namedtuple():
+    """Create registry entry for namedtuple and NamedTuple."""
+    entry = {
+        namedtuple: {
+            "flatten": lambda tree: (list(tree), tree),
+            "unflatten": _unflatten_namedtuple,
+            "names": lambda tree: list(tree._fields),
+        },
+    }
+    return entry
+
+
+def _unflatten_namedtuple(aux_data, leaves):
+    replacements = dict(zip(aux_data._fields, leaves))
+    out = aux_data._replace(**replacements)
+    return out
+
+
+def _ordereddict():
+    """Create registry entry for OrderedDict."""
+    entry = {
+        OrderedDict: {
+            "flatten": lambda tree: (list(tree.values()), list(tree)),
+            "unflatten": lambda aux_data, children: OrderedDict(
+                zip(aux_data, children)
+            ),
+            "names": lambda tree: list(map(str, list(tree))),
+        },
+    }
+    return entry
+
+
 def _numpy_array():
-    """Create a pytree declaration for numpy arrays.
+    """Create registry entry for numpy.ndarray."""
 
-    To-Do: Add optional axis argument.
-
-    """
     if IS_NUMPY_INSTALLED:
         entry = {
             np.ndarray: {
@@ -72,6 +118,7 @@ def _array_element_names(arr):
 
 
 def _pandas_series():
+    """Create registry entry for pandas.Series."""
     if IS_PANDAS_INSTALLED:
         entry = {
             pd.Series: {
@@ -88,13 +135,14 @@ def _pandas_series():
     return entry
 
 
-def _pandas_dataframe(columns=None):
+def _pandas_dataframe():
+    """Create registry entry for pandas.DataFrame."""
     if IS_PANDAS_INSTALLED:
         entry = {
             pd.DataFrame: {
-                "flatten": partial(_flatten_pandas_dataframe, columns=columns),
-                "unflatten": partial(_unflatten_pandas_dataframe),
-                "names": partial(_get_names_pandas_dataframe, columns=columns),
+                "flatten": _flatten_pandas_dataframe,
+                "unflatten": _unflatten_pandas_dataframe,
+                "names": _get_names_pandas_dataframe,
             }
         }
     else:
@@ -102,55 +150,34 @@ def _pandas_dataframe(columns=None):
     return entry
 
 
-def _flatten_pandas_dataframe(df, columns):
-    columns = _process_columns(df, columns)
-    flat = []
-    for col in columns:
-        flat += df[col].tolist()
-
-    aux_data = (columns, df.drop(columns=columns))
+def _flatten_pandas_dataframe(df):
+    flat = df.to_numpy().flatten().tolist()
+    aux_data = {"columns": df.columns, "index": df.index, "shape": df.shape}
     return flat, aux_data
 
 
 def _unflatten_pandas_dataframe(aux_data, leaves):
-    columns, empty_df = aux_data
-    out = empty_df.copy()
-    remaining_leaves = leaves
-    for col in columns:
-        out[col] = leaves[: len(empty_df)]
-        remaining_leaves = remaining_leaves[len(empty_df) :]
+    out = pd.DataFrame(
+        data=np.array(leaves).reshape(aux_data["shape"]),
+        columns=aux_data["columns"],
+        index=aux_data["index"],
+    )
     return out
 
 
-def _get_names_pandas_dataframe(df, columns):
-    columns = _process_columns(df, columns)
-    if len(columns) == 1:
-        out = list(df.index.map(_index_element_to_string))
-    else:
-        out = []
-        for col in df.columns:
-            out += list(df.index.map(partial(_index_element_to_string, prefix=col)))
+def _get_names_pandas_dataframe(df):
+    index_strings = list(df.index.map(_index_element_to_string))
+    out = ["_".join([loc, col]) for loc, col in product(index_strings, df.columns)]
     return out
 
 
-def _process_columns(df, columns):
-    if columns is None:
-        columns = df.columns
-    elif not isinstance(columns, list):
-        columns = [columns]
-    return columns
-
-
-def _index_element_to_string(element, prefix=None):
-    separator = "_"
+def _index_element_to_string(element):
     if isinstance(element, (tuple, list)):
         as_strings = [str(entry) for entry in element]
-        res_string = separator.join(as_strings)
+        res_string = "_".join(as_strings)
     else:
         res_string = str(element)
 
-    if prefix is not None:
-        res_string = separator.join([prefix, res_string])
     return res_string
 
 
@@ -161,4 +188,7 @@ FUNC_DICT = {
     "numpy.ndarray": _numpy_array,
     "pandas.Series": _pandas_series,
     "pandas.DataFrame": _pandas_dataframe,
+    "None": _none,
+    "namedtuple": _namedtuple,
+    "OrderedDict": _ordereddict,
 }

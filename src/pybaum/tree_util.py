@@ -10,6 +10,7 @@ import itertools
 
 from pybaum.equality import EQUALITY_CHECKERS
 from pybaum.registry import get_registry
+from pybaum.typecheck import get_type
 
 
 def tree_flatten(tree, is_leaf=None, registry=None):
@@ -80,14 +81,14 @@ def tree_just_flatten(tree, is_leaf=None, registry=None):
 
 def _tree_flatten(tree, is_leaf, registry):
     out = []
-    tree_type = type(tree)
+    tree_type = get_type(tree)
 
     if tree_type not in registry or is_leaf(tree):
         out.append(tree)
     else:
         subtrees, _ = registry[tree_type]["flatten"](tree)
         for subtree in subtrees:
-            if type(subtree) in registry:
+            if get_type(subtree) in registry:
                 out += _tree_flatten(subtree, is_leaf, registry)
             else:
                 out.append(subtree)
@@ -161,14 +162,14 @@ def tree_just_yield(tree, is_leaf=None, registry=None):
 
 def _tree_yield(tree, is_leaf, registry):
     out = []
-    tree_type = type(tree)
+    tree_type = get_type(tree)
 
     if tree_type not in registry or is_leaf(tree):
         yield tree
     else:
         subtrees, _ = registry[tree_type]["flatten"](tree)
         for subtree in subtrees:
-            if type(subtree) in registry:
+            if get_type(subtree) in registry:
                 yield from _tree_yield(subtree, is_leaf, registry)
             else:
                 yield subtree
@@ -211,7 +212,7 @@ def tree_unflatten(treedef, leaves, is_leaf=None, registry=None):
 
 def _tree_unflatten(treedef, leaves, is_leaf, registry):
     leaves = iter(leaves)
-    tree_type = type(treedef)
+    tree_type = get_type(treedef)
 
     if tree_type not in registry or is_leaf(treedef):
         return next(leaves)
@@ -219,7 +220,7 @@ def _tree_unflatten(treedef, leaves, is_leaf, registry):
         items, info = registry[tree_type]["flatten"](treedef)
         unflattened_items = []
         for item in items:
-            if type(item) in registry:
+            if get_type(item) in registry:
                 unflattened_items.append(
                     _tree_unflatten(item, leaves, is_leaf=is_leaf, registry=registry)
                 )
@@ -336,7 +337,7 @@ def leaf_names(tree, is_leaf=None, registry=None, separator="_"):
 
 def _leaf_names(tree, is_leaf, registry, separator, prefix=None):
     out = []
-    tree_type = type(tree)
+    tree_type = get_type(tree)
 
     if tree_type not in registry or is_leaf(tree):
         out.append(prefix)
@@ -344,7 +345,7 @@ def _leaf_names(tree, is_leaf, registry, separator, prefix=None):
         subtrees, info = registry[tree_type]["flatten"](tree)
         names = registry[tree_type]["names"](tree)
         for name, subtree in zip(names, subtrees):
-            if type(subtree) in registry:
+            if get_type(subtree) in registry:
                 out += _leaf_names(
                     subtree,
                     is_leaf=is_leaf,
@@ -424,7 +425,7 @@ def tree_equal(tree, other, is_leaf=None, registry=None, equality_checkers=None)
 
     if equal:
         for first, second in zip(first_flat, second_flat):
-            check_func = equality_checkers.get(type(first), lambda a, b: a == b)
+            check_func = equality_checkers.get(get_type(first), lambda a, b: a == b)
             equal = equal and check_func(first, second)
             if not equal:
                 break

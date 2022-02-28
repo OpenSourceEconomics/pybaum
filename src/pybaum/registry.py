@@ -1,7 +1,7 @@
 from pybaum.registry_entries import FUNC_DICT
 
 
-def get_registry(types=None, options=None, include_defaults=True):
+def get_registry(types=None, include_defaults=True):
     """Create a pytree registry.
 
     Args:
@@ -11,14 +11,15 @@ def get_registry(types=None, options=None, include_defaults=True):
             - "tuple"
             - "dict"
             - "list"
+            - :class:`collections.namedtuple` or :class:`typing.NamedTuple`
+            - :obj:`None`
+            - :class:`collections.OrderedDict`
             - "numpy.ndarray"
             - "pandas.Series"
             - "pandas.DataFrame"
-        options (dict): Option dictionary where the keys are names of types and the
-            values are keyword arguments that influence how containers are flattened
-            and unflattened.
         include_defaults (bool): Whether the default pytree containers "tuple", "dict"
-            and "list" should be included even if not specified in `types`.
+            "list", "None", "namedtuple" and "OrderedDict" should be included even if
+            not specified in `types`.
 
     Returns:
         dict: A pytree registry.
@@ -27,13 +28,12 @@ def get_registry(types=None, options=None, include_defaults=True):
     types = [] if types is None else types
 
     if include_defaults:
-        types = list(set(types) | {"list", "tuple", "dict"})
-
-    options = {} if options is None else options
+        default_types = {"list", "tuple", "dict", "None", "namedtuple", "OrderedDict"}
+        types = list(set(types) | default_types)
 
     registry = {}
     for typ in types:
-        new_entry = FUNC_DICT[typ](**options.get(typ, {}))
+        new_entry = FUNC_DICT[typ]()
         registry = {**registry, **new_entry}
 
     return registry

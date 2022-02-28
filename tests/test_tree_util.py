@@ -1,4 +1,6 @@
 import inspect
+from collections import namedtuple
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -48,8 +50,7 @@ def extended_treedef():
 @pytest.fixture
 def extended_registry():
     types = ["pandas.DataFrame", "pandas.Series", "numpy.ndarray"]
-    options = {"pandas.DataFrame": {"columns": "value"}}
-    return get_registry(types=types, options=options)
+    return get_registry(types=types)
 
 
 def test_tree_flatten(example_tree, example_flat, example_treedef):
@@ -180,16 +181,6 @@ def _assert_list_with_arrays_is_equal(list1, list2):
             assert first == second
 
 
-def test_flatten_df_with_value_column(extended_registry):
-    df = pd.DataFrame(index=["a", "b", "c"])
-    df["value"] = [1, 2, 3]
-    df["bla"] = [4, 5, 6]
-
-    flat, _ = tree_flatten(df, registry=extended_registry)
-
-    assert flat == [1, 2, 3]
-
-
 def test_flatten_df_all_columns():
     registry = get_registry(types=["pandas.DataFrame"])
     df = pd.DataFrame(index=["a", "b", "c"])
@@ -198,7 +189,7 @@ def test_flatten_df_all_columns():
 
     flat, _ = tree_flatten(df, registry=registry)
 
-    assert flat == [1, 2, 3, 4, 5, 6]
+    assert flat == [1, 4, 2, 5, 3, 6]
 
 
 def test_tree_yield(example_tree, example_treedef, example_flat):
@@ -211,3 +202,38 @@ def test_tree_yield(example_tree, example_treedef, example_flat):
             aaae(a, b)
         else:
             assert a == b
+
+
+def test_flatten_with_none():
+    flat, treedef = tree_flatten(None)
+    assert flat == []
+    assert treedef is None
+
+
+def test_leaf_names_with_none():
+    names = leaf_names(None)
+    assert names == []
+
+
+def test_flatten_with_namedtuple():
+    bla = namedtuple("bla", ["a", "b"])(1, 2)
+    flat, _ = tree_flatten(bla)
+    assert flat == [1, 2]
+
+
+def test_names_with_namedtuple():
+    bla = namedtuple("bla", ["a", "b"])(1, 2)
+    names = leaf_names(bla)
+    assert names == ["a", "b"]
+
+
+def test_flatten_with_ordered_dict():
+    d = OrderedDict({"a": 1, "b": 2})
+    flat, _ = tree_flatten(d)
+    assert flat == [1, 2]
+
+
+def test_names_with_ordered_dict():
+    d = OrderedDict({"a": 1, "b": 2})
+    names = leaf_names(d)
+    assert names == ["a", "b"]
