@@ -5,12 +5,16 @@ from itertools import product
 
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
+from pybaum.config import IS_JAXLIB_INSTALLED
 
 if IS_NUMPY_INSTALLED:
     import numpy as np
 
 if IS_PANDAS_INSTALLED:
     import pandas as pd
+
+if IS_JAXLIB_INSTALLED:
+    import jaxlib
 
 
 def _none():
@@ -117,6 +121,22 @@ def _array_element_names(arr):
     return names
 
 
+def _jax_array():
+    if IS_JAX_INSTALLED:
+        entry = {
+            jaxlib.xla_extension.DeviceArray: {
+                "flatten": lambda arr: (arr.flatten().tolist(), arr.shape),
+                "unflatten": lambda aux_data, leaves: jnp.array(leaves).reshape(
+                    aux_data
+                ),
+                "names": _array_element_names,
+                },
+            }
+    else:
+        entry ={}
+    return entry
+
+
 def _pandas_series():
     """Create registry entry for pandas.Series."""
     if IS_PANDAS_INSTALLED:
@@ -186,6 +206,7 @@ FUNC_DICT = {
     "tuple": _tuple,
     "dict": _dict,
     "numpy.ndarray": _numpy_array,
+    "jaxlib.xla_extension.DeviceArray": _jax_array,
     "pandas.Series": _pandas_series,
     "pandas.DataFrame": _pandas_dataframe,
     "None": _none,
