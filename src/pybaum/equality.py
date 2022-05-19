@@ -1,6 +1,7 @@
 """Functions to check equality of pytree leaves."""
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
+from pybaum.config import IS_JAXLIB_INSTALLED
 
 
 if IS_NUMPY_INSTALLED:
@@ -9,6 +10,9 @@ if IS_NUMPY_INSTALLED:
 
 if IS_PANDAS_INSTALLED:
     import pandas as pd
+
+if IS_JAXLIB_INSTALLED:
+    import jaxlib
 
 
 EQUALITY_CHECKERS = {}
@@ -21,3 +25,8 @@ if IS_NUMPY_INSTALLED:
 if IS_PANDAS_INSTALLED:
     EQUALITY_CHECKERS[pd.Series] = lambda a, b: a.equals(b)
     EQUALITY_CHECKERS[pd.DataFrame] = lambda a, b: a.equals(b)
+
+
+if IS_JAXLIB_INSTALLED:
+    EQUALITY_CHECKERS[jaxlib.xla_extension.DeviceArray] = lambda a, b: bool((a == b).all())
+
