@@ -3,9 +3,9 @@ from collections import namedtuple
 from collections import OrderedDict
 from itertools import product
 
+from pybaum.config import IS_JAX_INSTALLED
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
-from pybaum.config import IS_JAXLIB_INSTALLED
 
 if IS_NUMPY_INSTALLED:
     import numpy as np
@@ -13,7 +13,8 @@ if IS_NUMPY_INSTALLED:
 if IS_PANDAS_INSTALLED:
     import pandas as pd
 
-if IS_JAXLIB_INSTALLED:
+if IS_JAX_INSTALLED:
+    import jax
     import jaxlib
 
 
@@ -126,14 +127,14 @@ def _jax_array():
         entry = {
             jaxlib.xla_extension.DeviceArray: {
                 "flatten": lambda arr: (arr.flatten().tolist(), arr.shape),
-                "unflatten": lambda aux_data, leaves: jnp.array(leaves).reshape(
+                "unflatten": lambda aux_data, leaves: jax.numpy.array(leaves).reshape(
                     aux_data
                 ),
                 "names": _array_element_names,
-                },
-            }
+            },
+        }
     else:
-        entry ={}
+        entry = {}
     return entry
 
 

@@ -15,8 +15,9 @@ else:
 
 
 try:
+    import jax  # noqa: F401
     import jaxlib  # noqa: F401
 except ImportError:
-    IS_JAXLIB_INSTALLED = False
+    IS_JAX_INSTALLED = False
 else:
-    IS_JAXLIB_INSTALLED = True
+    IS_JAX_INSTALLED = True
