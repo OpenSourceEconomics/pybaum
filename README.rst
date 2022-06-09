@@ -57,7 +57,7 @@ pybaum is available on `PyPI <https://pypi.org/project/pybaum>`_ and `Anaconda.o
 About
 -----
 
-pybaum provides tools to work with pytrees which is a concept burrowed from `JAX
+pybaum provides tools to work with pytrees which is a concept borrowed from `JAX
 <https://jax.readthedocs.io/en/latest/>`_.
 
 What is a pytree?
