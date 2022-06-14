@@ -31,20 +31,13 @@ def example_flat():
 
 
 @pytest.fixture
-def example_treedef():
-    return (["*", "*", {"a": "*", "b": "*"}], "*")
+def example_treedef(example_tree):
+    return example_tree
 
 
 @pytest.fixture
-def extended_treedef():
-    return (
-        [
-            "*",
-            np.array(["*", "*"]),
-            {"a": pd.Series(["*", "*"], index=["c", "d"]), "b": "*"},
-        ],
-        "*",
-    )
+def extended_treedef(example_tree):
+    return example_tree
 
 
 @pytest.fixture
@@ -195,7 +188,7 @@ def test_flatten_df_all_columns():
 def test_tree_yield(example_tree, example_treedef, example_flat):
     generator, treedef = tree_yield(example_tree)
 
-    assert treedef == example_treedef
+    assert tree_equal(treedef, example_treedef)
     assert inspect.isgenerator(generator)
     for a, b in zip(generator, example_flat):
         if isinstance(a, (np.ndarray, pd.Series)):

@@ -30,3 +30,5 @@ dependencies:
   - pdbpp
   - numpy
   - pandas
+  - jax
+  - jaxlib

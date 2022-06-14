@@ -25,21 +25,21 @@ def flat():
 
 @pytest.fixture
 def registry():
-    return get_registry(types=["jax.numpy.ndarray"])
+    return get_registry(types=["jax.numpy.ndarray", "numpy.ndarray"])
 
 
-def test_tree_just_flatten(tree, registry, flat):
+def test_tree_just_flatten_with_jax(tree, registry, flat):
     got = tree_just_flatten(tree, registry=registry)
     assert got == flat
 
 
-def test_tree_flatten(tree, registry, flat):
+def test_tree_flatten_with_jax(tree, registry, flat):
     got_flat, got_treedef = tree_flatten(tree, registry=registry)
     assert got_flat == flat
     assert tree_equal(got_treedef, tree)
 
 
-def test_leaf_names(tree, registry):
+def test_leaf_names_with_jax(tree, registry):
     got = leaf_names(tree, registry=registry)
     expected = ["a_b_0_0", "a_b_0_1", "a_b_1_0", "a_b_1_1", "c_0", "c_1"]
     assert got == expected
