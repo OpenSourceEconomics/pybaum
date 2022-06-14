@@ -42,8 +42,8 @@ def tree_flatten(tree, is_leaf=None, registry=None):
     is_leaf = _process_is_leaf(is_leaf)
 
     flat = _tree_flatten(tree, is_leaf=is_leaf, registry=registry)
-    dummy_flat = ["*"] * len(flat)
-    treedef = tree_unflatten(tree, dummy_flat, is_leaf=is_leaf, registry=registry)
+    # unflatten the flat tree to make a copy
+    treedef = tree_unflatten(tree, flat, is_leaf=is_leaf, registry=registry)
     return flat, treedef
 
 

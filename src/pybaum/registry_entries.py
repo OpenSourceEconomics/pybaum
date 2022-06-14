@@ -207,7 +207,7 @@ FUNC_DICT = {
     "tuple": _tuple,
     "dict": _dict,
     "numpy.ndarray": _numpy_array,
-    "jaxlib.xla_extension.DeviceArray": _jax_array,
+    "jax.numpy.ndarray": _jax_array,
     "pandas.Series": _pandas_series,
     "pandas.DataFrame": _pandas_dataframe,
     "None": _none,
