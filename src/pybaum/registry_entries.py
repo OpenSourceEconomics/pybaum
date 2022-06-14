@@ -3,6 +3,7 @@ from collections import namedtuple
 from collections import OrderedDict
 from itertools import product
 
+from pybaum.config import IS_JAX_INSTALLED
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
 
@@ -11,6 +12,10 @@ if IS_NUMPY_INSTALLED:
 
 if IS_PANDAS_INSTALLED:
     import pandas as pd
+
+if IS_JAX_INSTALLED:
+    import jax
+    import jaxlib
 
 
 def _none():
@@ -117,6 +122,22 @@ def _array_element_names(arr):
     return names
 
 
+def _jax_array():
+    if IS_JAX_INSTALLED:
+        entry = {
+            jaxlib.xla_extension.DeviceArray: {
+                "flatten": lambda arr: (arr.flatten().tolist(), arr.shape),
+                "unflatten": lambda aux_data, leaves: jax.numpy.array(leaves).reshape(
+                    aux_data
+                ),
+                "names": _array_element_names,
+            },
+        }
+    else:
+        entry = {}
+    return entry
+
+
 def _pandas_series():
     """Create registry entry for pandas.Series."""
     if IS_PANDAS_INSTALLED:
@@ -186,6 +207,7 @@ FUNC_DICT = {
     "tuple": _tuple,
     "dict": _dict,
     "numpy.ndarray": _numpy_array,
+    "jaxlib.xla_extension.DeviceArray": _jax_array,
     "pandas.Series": _pandas_series,
     "pandas.DataFrame": _pandas_dataframe,
     "None": _none,
