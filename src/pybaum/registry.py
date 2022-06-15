@@ -15,6 +15,7 @@ def get_registry(types=None, include_defaults=True):
             - :obj:`None`
             - :class:`collections.OrderedDict`
             - "numpy.ndarray"
+            - "jax.numpy.ndarray"
             - "pandas.Series"
             - "pandas.DataFrame"
         include_defaults (bool): Whether the default pytree containers "tuple", "dict"

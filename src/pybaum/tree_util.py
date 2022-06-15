@@ -6,8 +6,6 @@ The functions are not completely identical to jax. The most notable differences 
 - The treedef containing information to unflatten pytrees is implemented differently.
 
 """
-import itertools
-
 from pybaum.equality import EQUALITY_CHECKERS
 from pybaum.registry import get_registry
 from pybaum.typecheck import get_type
@@ -42,8 +40,8 @@ def tree_flatten(tree, is_leaf=None, registry=None):
     is_leaf = _process_is_leaf(is_leaf)
 
     flat = _tree_flatten(tree, is_leaf=is_leaf, registry=registry)
-    dummy_flat = ["*"] * len(flat)
-    treedef = tree_unflatten(tree, dummy_flat, is_leaf=is_leaf, registry=registry)
+    # unflatten the flat tree to make a copy
+    treedef = tree_unflatten(tree, flat, is_leaf=is_leaf, registry=registry)
     return flat, treedef
 
 
@@ -124,9 +122,7 @@ def tree_yield(tree, is_leaf=None, registry=None):
     is_leaf = _process_is_leaf(is_leaf)
 
     flat = _tree_yield(tree, is_leaf=is_leaf, registry=registry)
-    dummy_flat = itertools.repeat("*")
-    treedef = tree_unflatten(tree, dummy_flat, is_leaf=is_leaf, registry=registry)
-    return flat, treedef
+    return flat, tree
 
 
 def tree_just_yield(tree, is_leaf=None, registry=None):
