@@ -11,10 +11,6 @@ if IS_NUMPY_INSTALLED:
 if IS_PANDAS_INSTALLED:
     import pandas as pd
 
-if IS_JAX_INSTALLED:
-    import jaxlib
-
-
 EQUALITY_CHECKERS = {}
 
 
@@ -28,6 +24,4 @@ if IS_PANDAS_INSTALLED:
 
 
 if IS_JAX_INSTALLED:
-    EQUALITY_CHECKERS[jaxlib.xla_extension.DeviceArray] = lambda a, b: bool(
-        (a == b).all()
-    )
+    EQUALITY_CHECKERS["jax.numpy.ndarray"] = lambda a, b: bool((a == b).all())
