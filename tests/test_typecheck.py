@@ -6,7 +6,7 @@ from pybaum.typecheck import get_type
 
 def test_namedtuple_is_discovered():
     bla = namedtuple("bla", ["a", "b"])(1, 2)
-    assert get_type(bla) == namedtuple
+    assert get_type(bla) == "namedtuple"
 
 
 def test_typed_namedtuple_is_discovered():
@@ -15,7 +15,7 @@ def test_typed_namedtuple_is_discovered():
         b: int
 
     blubb = Blubb(1, 2)
-    assert get_type(blubb) == namedtuple
+    assert get_type(blubb) == "namedtuple"
 
 
 def test_standard_tuple_is_not_discovered():

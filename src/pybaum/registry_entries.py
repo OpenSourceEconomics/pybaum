@@ -1,5 +1,4 @@
 import itertools
-from collections import namedtuple
 from collections import OrderedDict
 from itertools import product
 
@@ -15,7 +14,6 @@ if IS_PANDAS_INSTALLED:
 
 if IS_JAX_INSTALLED:
     import jax
-    import jaxlib
 
 
 def _none():
@@ -69,7 +67,7 @@ def _tuple():
 def _namedtuple():
     """Create registry entry for namedtuple and NamedTuple."""
     entry = {
-        namedtuple: {
+        "namedtuple": {
             "flatten": lambda tree: (list(tree), tree),
             "unflatten": _unflatten_namedtuple,
             "names": lambda tree: list(tree._fields),
@@ -125,7 +123,7 @@ def _array_element_names(arr):
 def _jax_array():
     if IS_JAX_INSTALLED:
         entry = {
-            jaxlib.xla_extension.DeviceArray: {
+            "jax.numpy.ndarray": {
                 "flatten": lambda arr: (arr.flatten().tolist(), arr.shape),
                 "unflatten": lambda aux_data, leaves: jax.numpy.array(leaves).reshape(
                     aux_data
