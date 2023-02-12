@@ -24,7 +24,7 @@ pybaum
 .. image:: https://readthedocs.org/projects/pybaum/badge/?version=latest
     :target: https://pybaum.readthedocs.io/en/latest
 
-.. image:: https://img.shields.io/github/workflow/status/OpenSourceEconomics/pybaum/main/main
+.. image:: https://img.shields.io/github/actions/workflow/status/OpenSourceEconomics/pybaum/main.yml?branch=main
    :target: https://github.com/OpenSourceEconomics/pybaum/actions?query=branch%3Amain
 
 .. image:: https://codecov.io/gh/OpenSourceEconomics/pybaum/branch/main/graph/badge.svg
