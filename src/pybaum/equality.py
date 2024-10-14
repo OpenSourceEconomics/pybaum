@@ -1,4 +1,5 @@
 """Functions to check equality of pytree leaves."""
+
 from pybaum.config import IS_JAX_INSTALLED
 from pybaum.config import IS_NUMPY_INSTALLED
 from pybaum.config import IS_PANDAS_INSTALLED
