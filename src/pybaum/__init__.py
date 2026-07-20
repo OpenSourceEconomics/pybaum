@@ -10,7 +10,6 @@ from pybaum.tree_util import tree_unflatten
 from pybaum.tree_util import tree_update
 from pybaum.tree_util import tree_yield
 
-
 __all__ = [
     "tree_flatten",
     "tree_just_flatten",
