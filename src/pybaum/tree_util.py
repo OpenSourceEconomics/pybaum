@@ -6,6 +6,7 @@ The functions are not completely identical to jax. The most notable differences 
 - The treedef containing information to unflatten pytrees is implemented differently.
 
 """
+
 from pybaum.equality import EQUALITY_CHECKERS
 from pybaum.registry import get_registry
 from pybaum.typecheck import get_type
